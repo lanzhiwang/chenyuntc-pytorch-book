@@ -13,7 +13,9 @@ size = comm.Get_size()
 torch.cuda.set_device(rank)
 
 ## 第二步：构建数据
-dataset = tv.datasets.CIFAR10(root="./", download=True, transform=tv.transforms.ToTensor())
+dataset = tv.datasets.CIFAR10(
+    root="./", download=True, transform=tv.transforms.ToTensor()
+)
 # 为每一个进程划分不同的data
 # X[rank::size]的意思是：从第<rank>个元素开始，每隔<size>个元素取一个
 dataset.data = dataset.data[rank::size]
@@ -34,19 +36,19 @@ loss_fn = torch.nn.CrossEntropyLoss().cuda()
 for ii, (data, target) in enumerate(dataloader):
     data = data.cuda()
     output = model(data)
-    print("data",data.shape)
-    print("output",output.shape)
-    print("target",target.shape)
+    print("data", data.shape)
+    print("output", output.shape)
+    print("target", target.shape)
     loss = loss_fn(output, target.cuda())
     # 反向传播，每个进程都会各自计算梯度
     loss.backward()
     # 重点！计算所有进程的平均梯度，更新模型参数
     for name, param in model.named_parameters():
         grad_sum = comm.allreduce(param.grad.detach().cpu(), op=MPI.SUM)
-        grad_mean = grad_sum/(grad_sum * size)
+        grad_mean = grad_sum / (grad_sum * size)
         param.data -= lr * grad_mean.cuda()  # 梯度下降-更新模型参数
 
 # 只在rank-0打印和保存模型参数
 if rank == 0:
-    print('training finished, saving data')
+    print("training finished, saving data")
     torch.save(model.state_dict(), "./000.ckpt")

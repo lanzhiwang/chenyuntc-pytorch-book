@@ -4,13 +4,15 @@ import torch.distributed as dist
 import torchvision as tv
 
 ## 第一步：初始化
-dist.init_process_group(backend='nccl')
+dist.init_process_group(backend="nccl")
 local_rank = dist.get_rank()
 # 这样tensor.cuda()会默认使用第local_rank个gpu
 torch.cuda.set_device(local_rank)
 
 ## 第二步：构建数据
-dataset = tv.datasets.CIFAR10(root="./", download=True, transform=tv.transforms.ToTensor())
+dataset = tv.datasets.CIFAR10(
+    root="./", download=True, transform=tv.transforms.ToTensor()
+)
 # 为每一个进程分别划分不同的data
 # DistributedSampler可以实现为每个进程分配不同的数据
 sampler = torch.utils.data.DistributedSampler(dataset)
@@ -34,7 +36,7 @@ for ii, (data, target) in enumerate(dataloader):
     loss.backward()
     # 计算所有进程的平均梯度，并更新模型参数
     optimizer.step()
-    
+
 # 只在rank-0打印和保存模型参数
 if local_rank == 0:
     print("training finished, saving data")

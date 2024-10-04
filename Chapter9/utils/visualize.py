@@ -10,15 +10,15 @@ class Visualizer(object):
     调用原生的visdom接口
     """
 
-    def __init__(self, env='default', **kwargs):
-        self.vis = visdom.Visdom(env=env,use_incoming_socket=False, **kwargs)
+    def __init__(self, env="default", **kwargs):
+        self.vis = visdom.Visdom(env=env, use_incoming_socket=False, **kwargs)
 
         # 画的第几个数，相当于横坐标
         # 保存（’loss',23） 即loss的第23个点
         self.index = {}
-        self.log_text = ''
+        self.log_text = ""
 
-    def reinit(self, env='default', **kwargs):
+    def reinit(self, env="default", **kwargs):
         """
         修改visdom的配置
         """
@@ -42,12 +42,14 @@ class Visualizer(object):
         self.plot('loss',1.00)
         """
         x = self.index.get(name, 0)
-        self.vis.line(Y=np.array([y]), X=np.array([x]),
-                      win=name,
-                      opts=dict(title=name),
-                      update=None if x == 0 else 'append',
-                      **kwargs
-                      )
+        self.vis.line(
+            Y=np.array([y]),
+            X=np.array([x]),
+            win=name,
+            opts=dict(title=name),
+            update=None if x == 0 else "append",
+            **kwargs
+        )
         self.index[name] = x + 1
 
     def img(self, name, img_, **kwargs):
@@ -59,20 +61,16 @@ class Visualizer(object):
 
         ！！！don‘t ~~self.img('input_imgs',t.Tensor(100,64,64),nrows=10)~~！！！
         """
-        self.vis.images(img_.cpu().numpy(),
-                        win=name,
-                        opts=dict(title=name),
-                        **kwargs
-                        )
+        self.vis.images(img_.cpu().numpy(), win=name, opts=dict(title=name), **kwargs)
 
-    def log(self, info, win='log_text'):
+    def log(self, info, win="log_text"):
         """
         self.log({'loss':1,'lr':0.0001})
         """
 
-        self.log_text += ('[{time}] {info} <br>'.format(
-            time=time.strftime('%m%d_%H%M%S'),
-            info=info))
+        self.log_text += "[{time}] {info} <br>".format(
+            time=time.strftime("%m%d_%H%M%S"), info=info
+        )
         self.vis.text(self.log_text, win)
 
     def __getattr__(self, name):

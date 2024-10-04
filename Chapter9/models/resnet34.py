@@ -16,7 +16,8 @@ class ResidualBlock(nn.Module):
             nn.BatchNorm2d(outchannel),
             nn.ReLU(inplace=True),
             nn.Conv2d(outchannel, outchannel, 3, 1, 1, bias=False),
-            nn.BatchNorm2d(outchannel))
+            nn.BatchNorm2d(outchannel),
+        )
         self.right = shortcut
 
     def forward(self, x):
@@ -35,14 +36,15 @@ class ResNet34(BasicModule):
 
     def __init__(self, num_classes=2):
         super(ResNet34, self).__init__()
-        self.model_name = 'resnet34'
+        self.model_name = "resnet34"
 
         # 前几层: 图像转换
         self.pre = nn.Sequential(
             nn.Conv2d(3, 64, 7, 2, 3, bias=False),
             nn.BatchNorm2d(64),
             nn.ReLU(inplace=True),
-            nn.MaxPool2d(3, 2, 1))
+            nn.MaxPool2d(3, 2, 1),
+        )
 
         # 重复的layer，分别有3，4，6，3个residual block
         self.layer1 = self._make_layer(64, 64, 3, 1, is_shortcut=False)
@@ -60,9 +62,10 @@ class ResNet34(BasicModule):
         if is_shortcut:
             shortcut = nn.Sequential(
                 nn.Conv2d(inchannel, outchannel, 1, stride, bias=False),
-                nn.BatchNorm2d(outchannel))
+                nn.BatchNorm2d(outchannel),
+            )
         else:
-            shortcut=None
+            shortcut = None
 
         layers = []
         layers.append(ResidualBlock(inchannel, outchannel, stride, shortcut))

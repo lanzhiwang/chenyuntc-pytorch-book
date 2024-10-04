@@ -69,3 +69,24 @@ Happy Coding!
 
 - [京东购买链接](https://item.jd.com/13324115.html)
 - [当当购买链接](http://product.dangdang.com/29429915.html)
+
+
+```bash
+
+python -m venv .env
+
+source .env/bin/activate
+
+docker run -ti --rm \
+-v ~/work/code/go_code/ai/pytorch/chenyuntc-pytorch-book:/chenyuntc-pytorch-book \
+-w /chenyuntc-pytorch-book \
+docker-mirrors.alauda.cn/library/python:3.10.12-bullseye \
+bash
+
+pip install -i https://pypi.tuna.tsinghua.edu.cn/simple "black[jupyter]"
+
+find . -name "*.py" -exec black {} \;
+find . -name "*.ipynb" -exec black {} \;
+
+
+```

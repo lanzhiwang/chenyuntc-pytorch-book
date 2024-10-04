@@ -25,7 +25,7 @@ local_sum = local_data.sum()
 all_sum = comm.allreduce(local_sum, op=MPI.SUM)
 
 # 在每个进程计算平方，并将结果allgather
-local_square = local_data ** 2
+local_square = local_data**2
 result = comm.allgather(local_square)
 result = np.vstack(result)
 

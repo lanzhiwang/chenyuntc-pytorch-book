@@ -28,6 +28,7 @@ class Test(Module):
     def forward(self, x):
         return MySigmoid.apply(x)
 
+
 def main():
     x2 = torch.randn(4).requires_grad_()
     x1 = x2.clone().detach().cuda().requires_grad_()
@@ -35,7 +36,7 @@ def main():
     fx1 = model(x1)
     fx1.sum().backward()
 
-    fx2 = torch.exp(-x2) / (1. + torch.exp(-x2))
+    fx2 = torch.exp(-x2) / (1.0 + torch.exp(-x2))
     fx2.sum().backward()
 
     assert fx1.data.cpu().allclose(fx2)
@@ -55,13 +56,13 @@ def compare_pytorch_with_cuda():
 
     x2 = torch.randn((1280, 1280)).float().requires_grad_()
     starttime = time.time()
-    fx2 = torch.exp(-x2) / (1. - torch.exp(-x2))
+    fx2 = torch.exp(-x2) / (1.0 - torch.exp(-x2))
     print("pytorch forward time:", time.time() - starttime)
     starttime = time.time()
     fx2.sum().backward()
     print("pytorch backward time:", time.time() - starttime)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
     compare_pytorch_with_cuda()

@@ -19,35 +19,38 @@ class DogCat(data.Dataset):
         imgs = [os.path.join(root, img) for img in os.listdir(root)]
 
         if self.mode == "test":
-            imgs = sorted(imgs, key=lambda x: int(x.split('.')[-2].split('/')[-1]))
+            imgs = sorted(imgs, key=lambda x: int(x.split(".")[-2].split("/")[-1]))
         else:
-            imgs = sorted(imgs, key=lambda x: int(x.split('.')[-2]))
+            imgs = sorted(imgs, key=lambda x: int(x.split(".")[-2]))
 
         imgs_num = len(imgs)
 
-        if self.mode == "test": self.imgs = imgs
-        if self.mode == "train": self.imgs = imgs[:int(0.7 * imgs_num)]
-        if self.mode == "val": self.imgs = imgs[int(0.7 * imgs_num):]
+        if self.mode == "test":
+            self.imgs = imgs
+        if self.mode == "train":
+            self.imgs = imgs[: int(0.7 * imgs_num)]
+        if self.mode == "val":
+            self.imgs = imgs[int(0.7 * imgs_num) :]
 
         if transforms is None:
-            normalize = T.Normalize(mean=[0.485, 0.456, 0.406],
-                                    std=[0.229, 0.224, 0.225])
+            normalize = T.Normalize(
+                mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]
+            )
 
             if self.mode == "test" or self.mode == "val":
-                self.transforms = T.Compose([
-                    T.Resize(224),
-                    T.CenterCrop(224),
-                    T.ToTensor(),
-                    normalize
-                ])
+                self.transforms = T.Compose(
+                    [T.Resize(224), T.CenterCrop(224), T.ToTensor(), normalize]
+                )
             else:
-                self.transforms = T.Compose([
-                    T.Resize(256),
-                    T.RandomResizedCrop(224),
-                    T.RandomHorizontalFlip(),
-                    T.ToTensor(),
-                    normalize
-                ])
+                self.transforms = T.Compose(
+                    [
+                        T.Resize(256),
+                        T.RandomResizedCrop(224),
+                        T.RandomHorizontalFlip(),
+                        T.ToTensor(),
+                        normalize,
+                    ]
+                )
 
     def __getitem__(self, index):
         """
@@ -55,9 +58,9 @@ class DogCat(data.Dataset):
         """
         img_path = self.imgs[index]
         if self.mode == "test":
-            label = int(self.imgs[index].split('.')[-2].split('/')[-1])
+            label = int(self.imgs[index].split(".")[-2].split("/")[-1])
         else:
-            label = 1 if 'dog' in img_path.split('/')[-1] else 0
+            label = 1 if "dog" in img_path.split("/")[-1] else 0
         data = Image.open(img_path)
         data = self.transforms(data)
         return data, label

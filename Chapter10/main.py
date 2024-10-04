@@ -9,7 +9,7 @@ from torchnet.meter import AverageValueMeter
 
 
 class Config(object):
-    data_path = 'data/'  # 数据集存放路径
+    data_path = "data/"  # 数据集存放路径
     num_workers = 4  # 多进程加载数据所用的进程数
     image_size = 96  # 图片尺寸
     batch_size = 256
@@ -22,13 +22,13 @@ class Config(object):
     ngf = 64  # 生成器feature map数
     ndf = 64  # 判别器feature map数
 
-    save_path = 'imgs/'  # 生成图片保存路径
+    save_path = "imgs/"  # 生成图片保存路径
 
     vis = True  # 是否使用visdom可视化
-    env = 'GAN'  # visdom的env
+    env = "GAN"  # visdom的env
     plot_every = 20  # 每间隔20 batch，visdom画图一次
 
-    debug_file = '/tmp/debuggan'  # 存在该文件则进入debug模式
+    debug_file = "/tmp/debuggan"  # 存在该文件则进入debug模式
     d_every = 1  # 每1个batch训练一次判别器
     g_every = 2  # 每2个batch训练一次生成器
     save_every = 10  # 每10个epoch保存一次模型
@@ -36,7 +36,7 @@ class Config(object):
     netg_path = None  # 'checkpoints/netg_211.pth'
 
     # 测试时所用参数
-    gen_img = 'result.png'
+    gen_img = "result.png"
     # 从5000张生成的图片中保存最好的64张
     gen_num = 64
     gen_search_num = 5000
@@ -51,26 +51,30 @@ def train(**kwargs):
     for k_, v_ in kwargs.items():
         setattr(opt, k_, v_)
 
-    device=t.device('cuda') if opt.gpu else t.device('cpu')
+    device = t.device("cuda") if opt.gpu else t.device("cpu")
     if opt.vis:
         from visualize import Visualizer
+
         vis = Visualizer(opt.env)
 
     # 数据
-    transforms = tv.transforms.Compose([
-        tv.transforms.Resize(opt.image_size),
-        tv.transforms.CenterCrop(opt.image_size),
-        tv.transforms.ToTensor(),
-        tv.transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
-    ])
+    transforms = tv.transforms.Compose(
+        [
+            tv.transforms.Resize(opt.image_size),
+            tv.transforms.CenterCrop(opt.image_size),
+            tv.transforms.ToTensor(),
+            tv.transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
+        ]
+    )
 
     dataset = tv.datasets.ImageFolder(opt.data_path, transform=transforms)
-    dataloader = t.utils.data.DataLoader(dataset,
-                                         batch_size=opt.batch_size,
-                                         shuffle=True,
-                                         num_workers=opt.num_workers,
-                                         drop_last=True
-                                         )
+    dataloader = t.utils.data.DataLoader(
+        dataset,
+        batch_size=opt.batch_size,
+        shuffle=True,
+        num_workers=opt.num_workers,
+        drop_last=True,
+    )
 
     # 网络
     netg, netd = NetG(opt), NetD(opt)
@@ -81,7 +85,6 @@ def train(**kwargs):
         netg.load_state_dict(t.load(opt.netg_path, map_location=map_location))
     netd.to(device)
     netg.to(device)
-
 
     # 定义优化器
     optimizer_g = t.optim.Adam(netg.parameters(), opt.lr1, betas=(opt.beta1, 0.999))
@@ -96,7 +99,6 @@ def train(**kwargs):
 
     errord_meter = AverageValueMeter()
     errorg_meter = AverageValueMeter()
-
 
     epochs = range(opt.max_epoch)
     for epoch in iter(epochs):
@@ -134,7 +136,9 @@ def train(**kwargs):
                 r_f_diff = r_preds - t.mean(f_preds)
                 f_r_diff = f_preds - t.mean(r_preds)
 
-                error_g = t.mean(t.nn.ReLU()(1+r_f_diff))+t.mean(t.nn.ReLU()(1-f_r_diff))
+                error_g = t.mean(t.nn.ReLU()(1 + r_f_diff)) + t.mean(
+                    t.nn.ReLU()(1 - f_r_diff)
+                )
                 error_g.backward()
                 optimizer_g.step()
                 errorg_meter.add(error_g.item())
@@ -144,18 +148,24 @@ def train(**kwargs):
                 if os.path.exists(opt.debug_file):
                     ipdb.set_trace()
                 fix_fake_imgs = netg(fix_noises)
-                vis.images(fix_fake_imgs.detach().cpu().numpy()[:64] * 0.5 + 0.5, win='fixfake')
-                vis.images(real_img.data.cpu().numpy()[:64] * 0.5 + 0.5, win='real')
-                vis.plot('errord', errord_meter.value()[0])
-                vis.plot('errorg', errorg_meter.value()[0])
+                vis.images(
+                    fix_fake_imgs.detach().cpu().numpy()[:64] * 0.5 + 0.5, win="fixfake"
+                )
+                vis.images(real_img.data.cpu().numpy()[:64] * 0.5 + 0.5, win="real")
+                vis.plot("errord", errord_meter.value()[0])
+                vis.plot("errorg", errorg_meter.value()[0])
 
-        if (epoch+1) % opt.save_every == 0:
+        if (epoch + 1) % opt.save_every == 0:
             # 保存模型、图片
             fix_fake_imgs = netg(fix_noises)
-            tv.utils.save_image(fix_fake_imgs.data[:64], '%s/%s.png' % (opt.save_path, epoch+1), normalize=True,
-                                range=(-1, 1))
-            t.save(netd.state_dict(), 'checkpoints/netd_%s.pth' % epoch)
-            t.save(netg.state_dict(), 'checkpoints/netg_%s.pth' % epoch)
+            tv.utils.save_image(
+                fix_fake_imgs.data[:64],
+                "%s/%s.png" % (opt.save_path, epoch + 1),
+                normalize=True,
+                range=(-1, 1),
+            )
+            t.save(netd.state_dict(), "checkpoints/netd_%s.pth" % epoch)
+            t.save(netg.state_dict(), "checkpoints/netg_%s.pth" % epoch)
             errord_meter.reset()
             errorg_meter.reset()
 
@@ -167,11 +177,13 @@ def generate(**kwargs):
     """
     for k_, v_ in kwargs.items():
         setattr(opt, k_, v_)
-    
-    device=t.device('cuda') if opt.gpu else t.device('cpu')
+
+    device = t.device("cuda") if opt.gpu else t.device("cpu")
 
     netg, netd = NetG(opt).eval(), NetD(opt).eval()
-    noises = t.randn(opt.gen_search_num, opt.nz, 1, 1).normal_(opt.gen_mean, opt.gen_std)
+    noises = t.randn(opt.gen_search_num, opt.nz, 1, 1).normal_(
+        opt.gen_mean, opt.gen_std
+    )
     noises = noises.to(device)
 
     map_location = lambda storage, loc: storage
@@ -179,7 +191,6 @@ def generate(**kwargs):
     netg.load_state_dict(t.load(opt.netg_path, map_location=map_location))
     netd.to(device)
     netg.to(device)
-
 
     # 生成图片，并计算图片在判别器的分数
     fake_img = netg(noises)
@@ -194,6 +205,7 @@ def generate(**kwargs):
     tv.utils.save_image(t.stack(result), opt.gen_img, normalize=True, range=(-1, 1))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     import fire
+
     fire.Fire()

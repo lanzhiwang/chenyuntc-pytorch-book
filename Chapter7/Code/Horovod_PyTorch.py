@@ -12,7 +12,9 @@ local_rank = hvd.local_rank()
 torch.cuda.set_device(local_rank)
 
 ## 第二步：构建数据
-dataset = tv.datasets.CIFAR10(root="./", download=True, transform=tv.transforms.ToTensor())
+dataset = tv.datasets.CIFAR10(
+    root="./", download=True, transform=tv.transforms.ToTensor()
+)
 # 为每一个进程分别划分不同的data
 # DistributedSampler可以实现为每个进程分配不同的数据
 sampler = torch.utils.data.DistributedSampler(dataset, num_replicas=size, rank=rank)
@@ -27,7 +29,9 @@ loss_fn = torch.nn.CrossEntropyLoss().cuda()
 
 ## 第四步：训练
 optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
-optimizer = hvd.DistributedOptimizer(optimizer, named_parameters=model.named_parameters())
+optimizer = hvd.DistributedOptimizer(
+    optimizer, named_parameters=model.named_parameters()
+)
 for ii, (data, target) in enumerate(dataloader):
     # 确保将数据打乱（DistributedSampler使用epoch作为随机种子）
     sampler.set_epoch(ii)

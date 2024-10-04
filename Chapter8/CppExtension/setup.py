@@ -8,8 +8,10 @@ include_dirs = "./src"
 source = ["./src/MySigmoid.cpp"]
 
 setup(
-    name='mysigmoid',  # 模块名称，宏TORCH_EXTENSION_NAME的值
+    name="mysigmoid",  # 模块名称，宏TORCH_EXTENSION_NAME的值
     version="0.1",
-    ext_modules=[CppExtension('mysigmoid', sources=source, include_dirs=[include_dirs]),],
-    cmdclass={'build_ext': BuildExtension}
+    ext_modules=[
+        CppExtension("mysigmoid", sources=source, include_dirs=[include_dirs]),
+    ],
+    cmdclass={"build_ext": BuildExtension},
 )
