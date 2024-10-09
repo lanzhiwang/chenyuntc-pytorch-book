@@ -88,5 +88,12 @@ pip install -i https://pypi.tuna.tsinghua.edu.cn/simple "black[jupyter]"
 find . -name "*.py" -exec black {} \;
 find . -name "*.ipynb" -exec black {} \;
 
+docker run -it --rm -p 10000:8888 -v ~/work/code/go_code/ai/pytorch/chenyuntc-pytorch-book:/home/jovyan/work jupyter/minimal-notebook:x86_64-python-3.11.6
+
+pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
+
+docker build --network host -t chenyuntc-pytorch-book:20240910 .
+
+docker run -it --rm -p 10000:8888 -v ~/work/code/go_code/ai/pytorch/chenyuntc-pytorch-book:/home/jovyan/work chenyuntc-pytorch-book:20240910
 
 ```
